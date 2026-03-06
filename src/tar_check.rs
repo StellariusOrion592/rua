@@ -4,14 +4,14 @@ extern crate ruzstd;
 use colored::*;
 use indexmap::IndexSet;
 use libflate::gzip::Decoder;
+use liblzma::read::XzDecoder;
 use log::debug;
-use ruzstd::StreamingDecoder;
+use ruzstd::decoding::StreamingDecoder;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::path::PathBuf;
 use tar::*;
-use xz2::read::XzDecoder;
 
 pub fn tar_check_unwrap(tar_file: &Path, file_name: &str) {
 	let result = tar_check(tar_file, file_name);

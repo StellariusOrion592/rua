@@ -2,7 +2,7 @@ use crate::rua_environment;
 use crate::wrapped;
 use colored::Colorize;
 use directories::ProjectDirs;
-use fs2::FileExt;
+use fs4::fs_std::FileExt;
 use log::debug;
 use std::env;
 use std::fs;
@@ -13,7 +13,6 @@ use std::io::Write;
 use std::os::unix::fs::PermissionsExt;
 use std::path::Path;
 use std::path::PathBuf;
-use std::process::exit;
 use std::process::Command;
 
 /// All directories must exist upon `RuaPaths` creation.
@@ -39,12 +38,6 @@ impl RuaPaths {
 	/// Only use for actions that require `makepkg` execution,
 	/// because it does root and single-instance checks as well.
 	pub fn initialize_paths() -> RuaPaths {
-		if unsafe { libc::geteuid() } == 0 {
-			eprintln!("RUA does not allow building as root.");
-			eprintln!("Also, makepkg will not allow you building as root anyway.");
-			exit(1)
-		}
-
 		let dirs = &ProjectDirs::from("com.gitlab", "vn971", "rua")
 			.expect("Failed to determine XDG directories");
 		std::fs::create_dir_all(dirs.config_dir())
@@ -180,7 +173,7 @@ fn perform_makepkg_checks_and_return_pkgext(makepkg_config_loader_path: &Path) -
 	}
 
 	for &var in &["PKGDEST", "SRCDEST", "SRCPKGDEST", "LOGDEST", "BUILDDIR"] {
-		env::set_var(var, "/dev/null"); // make sure we override it later
+		unsafe { env::set_var(var, "/dev/null") }; // make sure we override it later
 	}
 
 	pkgext.expect("Internal error: no PKGEXT entry in makepkg configuration?!")

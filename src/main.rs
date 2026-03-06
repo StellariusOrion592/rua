@@ -20,18 +20,25 @@ mod wrapped;
 
 use crate::print_package_info::info;
 use crate::wrapped::shellcheck;
+use anyhow::{Context, Result, Ok};
+use clap::Parser;
 use cli_args::Action;
 use cli_args::CliArgs;
+use nix::unistd::geteuid;
 use std::collections::HashSet;
-use std::process::exit;
-use structopt::StructOpt;
+use std::process::{ExitCode, exit};
 
-fn main() {
-	let cli_args: CliArgs = CliArgs::from_args();
+fn main() -> Result<ExitCode> {
+	if geteuid().is_root() {
+		eprintln!("RUA does not allow building as root.\nAlso, makepkg will not allow you building as root anyway.");
+		return Ok(ExitCode::FAILURE);
+	}
+ 	let cli_args: CliArgs = CliArgs::parse();
 	rua_environment::prepare_environment(&cli_args);
 	match &cli_args.action {
-		Action::Info { ref target } => {
-			info(target, false).unwrap();
+		Action::Info { target } => {
+			info(target, false)
+			.context("Failed to find info")?
 		}
 		Action::Install {
 			asdeps,
@@ -83,4 +90,5 @@ fn main() {
 			}
 		}
 	};
+	Ok(ExitCode::SUCCESS)
 }

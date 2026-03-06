@@ -12,6 +12,7 @@ use indexmap::IndexSet;
 use itertools::Itertools;
 use log::debug;
 use log::trace;
+use nix::libc;
 use std::collections::HashSet;
 use std::fs;
 use std::fs::ReadDir;
@@ -128,7 +129,7 @@ fn install_all(
 		.unique_by(|(pkgbase, _depth, _split)| pkgbase.to_string())
 		.collect::<Vec<_>>();
 	// once we have a collection of pkgname-s and their depth, proceed straightforwardly.
-	for (depth, packages) in &packages.iter().group_by(|(_pkgbase, depth, _split)| *depth) {
+	for (depth, packages) in &packages.iter().chunk_by(|(_pkgbase, depth, _split)| *depth) {
 		let packages = packages.collect::<Vec<&(String, i32, String)>>();
 		for (pkgbase, _depth, _split) in &packages {
 			let review_dir = rua_paths.review_dir(pkgbase);

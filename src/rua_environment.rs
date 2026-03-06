@@ -9,7 +9,7 @@ use std::io::Write;
 
 pub fn set_env_if_not_set(key: &str, value: &str) {
 	if env::var_os(key).is_none() {
-		env::set_var(key, value);
+		unsafe { env::set_var(key, value) };
 	}
 }
 
@@ -28,20 +28,26 @@ pub fn prepare_environment(config: &CliArgs) {
 		.init();
 	match config.color {
 		// see "colored" crate and referenced specs
-		CLIColorType::auto => {
-			env::remove_var("NOCOLOR");
-			env::remove_var("CLICOLOR_FORCE");
-			env::remove_var("CLICOLOR");
+		CLIColorType::Auto => {
+			unsafe {
+				env::remove_var("NOCOLOR");
+				env::remove_var("CLICOLOR_FORCE");
+				env::remove_var("CLICOLOR");
+			}
 		}
-		CLIColorType::never => {
-			env::set_var("NOCOLOR", "1");
-			env::remove_var("CLICOLOR_FORCE");
-			env::set_var("CLICOLOR", "0");
+		CLIColorType::Never => {
+			unsafe {
+				env::set_var("NOCOLOR", "1");
+				env::remove_var("CLICOLOR_FORCE");
+				env::set_var("CLICOLOR", "0");
+			}
 		}
-		CLIColorType::always => {
-			env::remove_var("NOCOLOR");
-			env::set_var("CLICOLOR_FORCE", "1");
-			env::remove_var("CLICOLOR");
+		CLIColorType::Always => {
+			unsafe {
+				env::remove_var("NOCOLOR");
+				env::set_var("CLICOLOR_FORCE", "1");
+				env::remove_var("CLICOLOR");
+			}
 		}
 	}
 	debug!(

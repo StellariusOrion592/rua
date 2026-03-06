@@ -20,7 +20,8 @@ use std::collections::HashSet;
 fn pkg_is_devel(name: &str) -> bool {
 	lazy_static! {
 		// make sure that the --devel help string in cli_args.rs matches if you change this
-		static ref RE: Regex = Regex::new(r"-(git|hg|bzr|svn|cvs|darcs)(-.+)*$").unwrap();
+		static ref RE: Regex = Regex::new(r"-(git|hg|bzr|svn|cvs|darcs)(-.+)*$")
+			.expect("Failed to compile regex pattern for version control files.");
 	}
 	RE.is_match(name)
 }
