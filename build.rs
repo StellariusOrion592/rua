@@ -109,7 +109,7 @@ mod seccomp {
 		// Deny these syscalls
 		for name in SYSCALL_BLACKLIST {
 			// Resolve the syscall number; if the name isn’t known on this arch,
-        	// we simply skip it (e.g., some syscalls are only on older kernels).
+        	// we panic and fail the build (e.g., some syscalls are only on older kernels).
 			match ScmpSyscall::from_name(name) {
 				Ok(syscall) => {
 					// Add rule to filter. The syscall number will later be translated for all enabled architectures in the filter.
