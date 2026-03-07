@@ -12,11 +12,28 @@ exec nice -n19 \
   ionice -c idle \
   bwrap \
   --new-session --die-with-parent \
-  --ro-bind / / \
+  --ro-bind /usr /usr \
+  --ro-bind /opt /opt \
+  --ro-bind /etc /etc \
+  --ro-bind /boot /boot \
+  --ro-bind /var /var \
+  --perms 000 --dir /root \
+  --dir /mnt \
+  --dir /media \
+  --dir /srv \
+  --symlink usr/bin /bin \
+  --symlink usr/bin /sbin \
+  --symlink usr/lib /lib \
+  --symlink usr/lib /lib64 \
   --dev /dev \
   --proc /proc \
+  --ro-bind /sys /sys \
   --tmpfs /tmp \
-  --tmpfs ~ \
+  --tmpfs /run \
+  --tmpfs /var/run \
+  --tmpfs /var/tmp \
+  --perms 0700 --tmpfs "$XDG_RUNTIME_DIR" \
+  --tmpfs "$HOME" \
   --ro-bind-try "${GNUPGHOME:-$HOME/.gnupg}/pubring.kbx" "${GNUPGHOME:-$HOME/.gnupg}/pubring.kbx" \
   --ro-bind-try "${GNUPGHOME:-$HOME/.gnupg}/pubring.gpg" "${GNUPGHOME:-$HOME/.gnupg}/pubring.gpg" \
   "${wrap_args[@]}" \
