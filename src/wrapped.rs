@@ -127,7 +127,6 @@ fn build_local(dir: &str, rua_paths: &RuaPaths, offline: bool, force: bool) {
 		command.arg("--unshare-net");
 	}
 	command.args(["--bind", dir, dir]).arg("makepkg");
-	command.env("FAKEROOTDONTTRYCHOWN", "true");
 	if force {
 		command.arg("--force");
 	}
