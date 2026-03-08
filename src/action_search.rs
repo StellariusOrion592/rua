@@ -17,7 +17,7 @@ pub fn action_search(keywords: &[String]) {
 	keywords.sort_by_key(|t| -(t.len() as i16));
 	let query = keywords
 		.first()
-		.expect("Zero search arguments, should be impossible in structopt");
+		.expect("Zero search arguments, should be impossible in clap");
 	let raur_handle = raur::blocking::Handle::new();
 	let result = raur_handle.search_by(query, SearchBy::NameDesc);
 	match result {
