@@ -8,7 +8,6 @@ use crate::terminal_util;
 use anyhow::Result;
 use colored::*;
 use itertools::Itertools;
-use lazy_static::lazy_static;
 use log::debug;
 use log::warn;
 use prettytable::format::*;
@@ -17,18 +16,23 @@ use regex::Regex;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::LazyLock;
 use anyhow::anyhow;
 
 fn pkg_is_devel(name: &str) -> bool {
-	lazy_static! {
-		// make sure that the --devel help string in cli_args.rs matches if you change this
-		static ref RE: Regex = Regex::new(r"-(git|hg|bzr|svn|cvs|darcs)(-.+)*$")
-			.expect("Failed to compile regex pattern for version control files.");
-	}
-	RE.is_match(name)
+	// make sure that the --devel help string in cli_args.rs matches if you change this
+	let re: LazyLock<Regex> = LazyLock::new(|| {
+		Regex::new(r"-(git|hg|bzr|svn|cvs|darcs)(-.+)*$")
+			.expect("Failed to compile regex pattern for version control files.")
+	});
+	re.is_match(name)
 }
 
-pub fn upgrade_printonly(devel: bool, ignored: &HashSet<&str>, target: &Option<Vec<String>>) {
+pub fn upgrade_printonly(
+	devel: bool,
+	ignored: &HashSet<&str>,
+	target: &Option<Vec<String>>
+) {
 	let alpm = new_alpm_wrapper();
 	let (outdated, nonexistent) =
 		calculate_upgrade(&*alpm, devel, ignored, target).expect("Calculating upgrade failed");
@@ -48,7 +52,12 @@ pub fn upgrade_printonly(devel: bool, ignored: &HashSet<&str>, target: &Option<V
 	}
 }
 
-pub fn upgrade_real(devel: bool, rua_paths: &RuaPaths, ignored: &HashSet<&str>, target: &Option<Vec<String>>) {
+pub fn upgrade_real(
+	devel: bool,
+	rua_paths: &RuaPaths,
+	ignored: &HashSet<&str>,
+	target: &Option<Vec<String>>
+) {
 	let alpm = new_alpm_wrapper();
 	let (outdated, nonexistent) =
 		calculate_upgrade(&*alpm, devel, ignored, target).expect("calculating upgrade failed");

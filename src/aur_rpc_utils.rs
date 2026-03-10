@@ -3,7 +3,7 @@ use anyhow::Result;
 use indexmap::IndexMap;
 use indexmap::IndexSet;
 use itertools::Itertools;
-use lazy_static::lazy_static;
+use std::sync::LazyLock;
 use log::trace;
 use raur::blocking::Handle;
 use raur::blocking::Raur;
@@ -101,24 +101,26 @@ fn clean_and_check_package_name(name: &str) -> String {
 }
 
 fn clean_package_name(name: &str) -> Option<String> {
-	lazy_static! {
-		static ref CLEANUP: Regex = Regex::new(r"(=.*|>.*|<.*)").unwrap_or_else(|err| panic!(
-			"{}:{} Failed to parse regexp, {}",
-			file!(),
-			line!(),
-			err
-		));
-	}
-	let name: String = CLEANUP.replace_all(name, "").to_string();
-	lazy_static! {
-		// From PKGBUILD manual page:
-		// Valid characters are alphanumerics, and any of the following characters: “@ . _ + -”.
-		// Additionally, names are not allowed to start with hyphens or dots.
-		static ref NAME_REGEX: Regex = Regex::new(r"^[a-zA-Z0-9@_+][a-zA-Z0-9@_+.-]*$").unwrap_or_else(
-			|err| panic!("{}:{} Failed to parse regexp, {}", file!(), line!(), err)
-		);
-	}
-	if NAME_REGEX.is_match(&name) {
+	let cleanup: LazyLock<Regex> = LazyLock::new(|| 
+		Regex::new(r"(=.*|>.*|<.*)")
+			.unwrap_or_else(|err| panic!(
+				"{}:{} Failed to parse regexp, {}",
+				file!(),
+				line!(),
+				err
+			))
+	);
+	let name: String = cleanup.replace_all(name, "").to_string();
+	let name_regex: LazyLock<Regex> = LazyLock::new(||
+		Regex::new(r"^[a-zA-Z0-9@_+][a-zA-Z0-9@_+.-]*$")
+			.unwrap_or_else(|err| panic!(
+				"{}:{} Failed to parse regexp, {}",
+				file!(),
+				line!(),
+				err
+			))
+	);
+	if name_regex.is_match(&name) {
 		Some(name)
 	} else {
 		None
